@@ -9,8 +9,11 @@ OWNER_ID = int(os.getenv("OWNER_ID", "0"))
 
 
 def load_approved():
-    with open(APPROVED_FILE, "r") as f:
-        return json.load(f)
+    try:
+        with open(APPROVED_FILE, "r") as f:
+            return json.load(f)
+    except:
+        return []
 
 
 def save_approved(data):
@@ -26,7 +29,13 @@ class Access(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="requestaccess", description="Request access to use this bot.")
+    # ----------------------------
+    # REQUEST ACCESS
+    # ----------------------------
+    @app_commands.command(
+        name="requestaccess",
+        description="Request access to use this bot."
+    )
     async def requestaccess(self, interaction: discord.Interaction):
 
         guild = interaction.guild
@@ -45,21 +54,34 @@ class Access(commands.Cog):
             )
             return
 
-        owner = self.bot.get_user(OWNER_ID)
-
-        if owner:
-            await owner.send(
-                f"Access Request:\n"
-                f"Server Name: {guild.name}\n"
-                f"Server ID: {guild.id}"
-            )
-
+        # IMPORTANT: Respond FIRST
         await interaction.response.send_message(
             "Access request sent to the bot owner.",
             ephemeral=True
         )
 
-    @app_commands.command(name="approve", description="Approve a server.")
+        # Then notify owner safely
+        try:
+            owner = await self.bot.fetch_user(OWNER_ID)
+
+            if owner:
+                await owner.send(
+                    f"🔔 Access Request\n\n"
+                    f"Server Name: {guild.name}\n"
+                    f"Server ID: {guild.id}\n\n"
+                    f"Use `/approve {guild.id}` to approve."
+                )
+
+        except Exception as e:
+            print("Failed to DM owner:", e)
+
+    # ----------------------------
+    # APPROVE
+    # ----------------------------
+    @app_commands.command(
+        name="approve",
+        description="Approve a server."
+    )
     async def approve(self, interaction: discord.Interaction, server_id: str):
 
         if interaction.user.id != OWNER_ID:
@@ -81,7 +103,13 @@ class Access(commands.Cog):
             ephemeral=True
         )
 
-    @app_commands.command(name="deny", description="Deny a server.")
+    # ----------------------------
+    # DENY
+    # ----------------------------
+    @app_commands.command(
+        name="deny",
+        description="Deny a server."
+    )
     async def deny(self, interaction: discord.Interaction, server_id: str):
 
         if interaction.user.id != OWNER_ID:
