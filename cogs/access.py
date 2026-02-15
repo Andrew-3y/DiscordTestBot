@@ -7,6 +7,14 @@ import os
 APPROVED_FILE = "approved_servers.json"
 OWNER_ID = int(os.getenv("OWNER_ID", "0"))
 
+# Read owner servers from environment variable
+OWNER_SERVERS = os.getenv("OWNER_SERVERS", "")
+OWNER_SERVER_IDS = [
+    int(server_id.strip())
+    for server_id in OWNER_SERVERS.split(",")
+    if server_id.strip().isdigit()
+]
+
 
 def load_approved():
     try:
@@ -21,7 +29,11 @@ def save_approved(data):
         json.dump(data, f, indent=4)
 
 
-def is_approved(guild_id):
+def is_approved(guild_id: int) -> bool:
+    # Automatically approve owner servers
+    if guild_id in OWNER_SERVER_IDS:
+        return True
+
     return guild_id in load_approved()
 
 
@@ -29,9 +41,6 @@ class Access(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # ----------------------------
-    # REQUEST ACCESS
-    # ----------------------------
     @app_commands.command(
         name="requestaccess",
         description="Request access to use this bot."
@@ -54,13 +63,11 @@ class Access(commands.Cog):
             )
             return
 
-        # IMPORTANT: Respond FIRST
         await interaction.response.send_message(
             "Access request sent to the bot owner.",
             ephemeral=True
         )
 
-        # Then notify owner safely
         try:
             owner = await self.bot.fetch_user(OWNER_ID)
 
@@ -71,13 +78,9 @@ class Access(commands.Cog):
                     f"Server ID: {guild.id}\n\n"
                     f"Use `/approve {guild.id}` to approve."
                 )
-
         except Exception as e:
             print("Failed to DM owner:", e)
 
-    # ----------------------------
-    # APPROVE
-    # ----------------------------
     @app_commands.command(
         name="approve",
         description="Approve a server."
@@ -103,9 +106,6 @@ class Access(commands.Cog):
             ephemeral=True
         )
 
-    # ----------------------------
-    # DENY
-    # ----------------------------
     @app_commands.command(
         name="deny",
         description="Deny a server."
