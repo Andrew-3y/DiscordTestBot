@@ -21,6 +21,7 @@ async def load_extensions():
     await bot.load_extension("cogs.access")
     await bot.load_extension("cogs.general")
     await bot.load_extension("cogs.info")
+    await bot.load_extension("cogs.poll")
 
 async def main():
     async with bot:
