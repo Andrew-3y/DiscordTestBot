@@ -5,7 +5,6 @@ import os
 
 OWNER_ID = int(os.getenv("OWNER_ID", "0"))
 
-
 class Access(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -21,58 +20,69 @@ class Access(commands.Cog):
     @app_commands.command(name="requestaccess", description="Request access to use this bot.")
     async def requestaccess(self, interaction: discord.Interaction):
 
-        guild = interaction.guild
+        await interaction.response.defer(ephemeral=True)
 
-        if guild is None:
-            await interaction.response.send_message(
-                "Use this command inside a server.",
+        if interaction.guild is None:
+            await interaction.followup.send(
+                "Use this inside a server.",
                 ephemeral=True
             )
             return
 
-        if await self.is_approved(guild.id):
-            await interaction.response.send_message(
+        if await self.is_approved(interaction.guild.id):
+            await interaction.followup.send(
                 "This server is already approved.",
                 ephemeral=True
             )
             return
 
-        await interaction.response.send_message(
-            "Access request sent to the bot owner.",
-            ephemeral=True
-        )
+        guild = interaction.guild
 
         owner = await self.bot.fetch_user(OWNER_ID)
+
         if owner:
             await owner.send(
-                f"Access Request:\n"
+                f"Access request:\n"
                 f"Server: {guild.name}\n"
-                f"ID: {guild.id}"
+                f"Server ID: {guild.id}"
             )
+
+        await interaction.followup.send(
+            "Access request sent to bot owner.",
+            ephemeral=True
+        )
 
     @app_commands.command(name="approve", description="Approve a server.")
     async def approve(self, interaction: discord.Interaction, server_id: str):
 
+        await interaction.response.defer(ephemeral=True)
+
         if interaction.user.id != OWNER_ID:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 "Not authorized.",
                 ephemeral=True
             )
             return
 
-        guild_id = int(server_id)
+        try:
+            guild_id = int(server_id)
 
-        async with self.bot.db.acquire() as conn:
-            await conn.execute(
-                "INSERT INTO approved_servers (guild_id) VALUES ($1) ON CONFLICT DO NOTHING",
-                guild_id
+            async with self.bot.db.acquire() as conn:
+                await conn.execute(
+                    "INSERT INTO approved_servers (guild_id) VALUES ($1) ON CONFLICT DO NOTHING",
+                    guild_id
+                )
+
+            await interaction.followup.send(
+                f"Server {guild_id} approved.",
+                ephemeral=True
             )
 
-        await interaction.response.send_message(
-            f"Server {guild_id} approved.",
-            ephemeral=True
-        )
-
+        except Exception as e:
+            await interaction.followup.send(
+                f"Error: {e}",
+                ephemeral=True
+            )
 
 async def setup(bot):
     await bot.add_cog(Access(bot))

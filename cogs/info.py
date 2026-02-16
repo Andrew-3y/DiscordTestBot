@@ -2,9 +2,8 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
-
 class Info(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot):
         self.bot = bot
 
     async def is_approved(self, guild_id: int) -> bool:
@@ -15,19 +14,18 @@ class Info(commands.Cog):
             )
             return result is not None
 
-    @app_commands.command(name="serverinfo", description="Get information about the server.")
+    @app_commands.command(name="serverinfo", description="Get server information.")
     async def serverinfo(self, interaction: discord.Interaction):
 
+        await interaction.response.defer()
+
         if interaction.guild is None:
-            await interaction.response.send_message(
-                "Use this command inside a server.",
-                ephemeral=True
-            )
+            await interaction.followup.send("Use inside a server.")
             return
 
         if not await self.is_approved(interaction.guild.id):
-            await interaction.response.send_message(
-                "This server is not approved. Use /requestaccess.",
+            await interaction.followup.send(
+                "Server not approved. Use /requestaccess.",
                 ephemeral=True
             )
             return
@@ -39,15 +37,11 @@ class Info(commands.Cog):
             color=discord.Color.blue()
         )
 
-        embed.add_field(name="Server Name", value=guild.name, inline=False)
+        embed.add_field(name="Name", value=guild.name, inline=False)
         embed.add_field(name="Members", value=guild.member_count, inline=True)
         embed.add_field(name="Server ID", value=guild.id, inline=True)
 
-        if guild.owner:
-            embed.add_field(name="Owner", value=str(guild.owner), inline=False)
+        await interaction.followup.send(embed=embed)
 
-        await interaction.response.send_message(embed=embed)
-
-
-async def setup(bot: commands.Bot):
+async def setup(bot):
     await bot.add_cog(Info(bot))

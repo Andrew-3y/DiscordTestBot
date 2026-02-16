@@ -2,9 +2,8 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
-
 class General(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot):
         self.bot = bot
 
     async def is_approved(self, guild_id: int) -> bool:
@@ -15,25 +14,23 @@ class General(commands.Cog):
             )
             return result is not None
 
-    @app_commands.command(name="ping", description="Check if the bot is alive.")
+    @app_commands.command(name="ping", description="Check if bot is alive.")
     async def ping(self, interaction: discord.Interaction):
 
+        await interaction.response.defer()
+
         if interaction.guild is None:
-            await interaction.response.send_message(
-                "Use this command inside a server.",
-                ephemeral=True
-            )
+            await interaction.followup.send("Use inside a server.")
             return
 
         if not await self.is_approved(interaction.guild.id):
-            await interaction.response.send_message(
-                "This server is not approved. Use /requestaccess.",
+            await interaction.followup.send(
+                "Server not approved. Use /requestaccess.",
                 ephemeral=True
             )
             return
 
-        await interaction.response.send_message("🏓 Pong!")
+        await interaction.followup.send("🏓 Pong!")
 
-
-async def setup(bot: commands.Bot):
+async def setup(bot):
     await bot.add_cog(General(bot))
