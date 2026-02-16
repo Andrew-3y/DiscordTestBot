@@ -16,7 +16,6 @@ class Info(commands.Cog):
 
     @app_commands.command(name="serverinfo", description="Get server information.")
     async def serverinfo(self, interaction: discord.Interaction):
-
         await interaction.response.defer()
 
         if interaction.guild is None:
@@ -24,19 +23,11 @@ class Info(commands.Cog):
             return
 
         if not await self.is_approved(interaction.guild.id):
-            await interaction.followup.send(
-                "Server not approved. Use /requestaccess.",
-                ephemeral=True
-            )
+            await interaction.followup.send("Server not approved.", ephemeral=True)
             return
 
         guild = interaction.guild
-
-        embed = discord.Embed(
-            title="📊 Server Information",
-            color=discord.Color.blue()
-        )
-
+        embed = discord.Embed(title="📊 Server Information", color=discord.Color.blue())
         embed.add_field(name="Name", value=guild.name, inline=False)
         embed.add_field(name="Members", value=guild.member_count, inline=True)
         embed.add_field(name="Server ID", value=guild.id, inline=True)

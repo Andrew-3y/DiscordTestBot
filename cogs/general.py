@@ -16,7 +16,6 @@ class General(commands.Cog):
 
     @app_commands.command(name="ping", description="Check if bot is alive.")
     async def ping(self, interaction: discord.Interaction):
-
         await interaction.response.defer()
 
         if interaction.guild is None:
@@ -24,10 +23,7 @@ class General(commands.Cog):
             return
 
         if not await self.is_approved(interaction.guild.id):
-            await interaction.followup.send(
-                "Server not approved. Use /requestaccess.",
-                ephemeral=True
-            )
+            await interaction.followup.send("Server not approved.", ephemeral=True)
             return
 
         await interaction.followup.send("🏓 Pong!")
