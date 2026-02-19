@@ -3,10 +3,11 @@ from discord.ext import commands
 from discord import app_commands
 
 class Poll(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot):
         self.bot = bot
 
     async def is_approved(self, guild_id: int) -> bool:
+        """Queries the Postgres database for server approval status."""
         async with self.bot.db.acquire() as conn:
             result = await conn.fetchrow(
                 "SELECT guild_id FROM approved_servers WHERE guild_id = $1",
@@ -21,7 +22,7 @@ class Poll(commands.Cog):
             await interaction.response.send_message("Use this command inside a server.", ephemeral=True)
             return
 
-        # Using the DB check instead of JSON
+        # Check database for server approval
         if not await self.is_approved(interaction.guild.id):
             await interaction.response.send_message(
                 "This server is not approved. Use /requestaccess first.",
@@ -38,10 +39,10 @@ class Poll(commands.Cog):
 
         await interaction.response.send_message(embed=embed)
         
-        # Fetch the message to add reactions
+        # Add reactions to the response
         message = await interaction.original_response()
         await message.add_reaction("👍")
         await message.add_reaction("👎")
 
-async def setup(bot: commands.Bot):
+async def setup(bot):
     await bot.add_cog(Poll(bot))
