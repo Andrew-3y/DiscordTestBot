@@ -1,68 +1,91 @@
-🚀 DiscordTestBot
+# 🚀 DiscordTestBot
 
-A modular, production-ready Discord bot built using discord.py, featuring
-slash commands, PostgreSQL persistence, and cloud deployment via Railway.
-This project is designed with clean architecture principles, asynchronous
-programming patterns, and scalable backend integration in mind.
+A modular, production-ready Discord bot built using `discord.py`, featuring slash commands, PostgreSQL persistence, and cloud deployment via Railway.
 
-🧠 Architecture Overview
+This project treats a Discord bot as a backend system rather than a simple command script. It is designed with clean architecture principles, asynchronous programming patterns, and scalable data modeling in mind.
 
-The bot follows a modular cog-based architecture using discord.py.
-Each feature is isolated into its own component (cog) to maintain separation
-of concerns and improve maintainability.
+
+## 🧠 Architecture Overview
+
+The bot follows a modular cog-based architecture using `discord.py`, where each feature is isolated into its own component to maintain separation of concerns and improve maintainability.
 
 Core architectural decisions:
 
-Event-driven interaction handling
+- Event-driven interaction handling  
+- Slash command–based interface (modern Discord standard)  
+- Asynchronous PostgreSQL integration via `asyncpg`  
+- Connection pooling for non-blocking database operations  
+- Composite primary key modeling to guarantee per-guild data isolation  
+- Conflict-safe upserts using `ON CONFLICT DO UPDATE`  
+- Environment-based configuration (no hardcoded secrets)  
+- Cloud-native deployment via Railway with automatic redeployment  
 
-Slash command–based interface (modern Discord standard)
-
-PostgreSQL persistence using asyncpg
-
-Connection pooling for non-blocking database operations
-
-Composite primary key modeling for multi-server isolation
-
-Environment-based configuration (no hardcoded secrets)
-
-Cloud-native deployment via Railway with auto-redeploy
-
-This structure ensures the bot remains scalable and easy to extend.
+This structure ensures the bot remains scalable, secure, and easy to extend.
 
 
+## ⚙️ Core Features
 
-⚙️ Core Features
-
-Slash command system (/)
-
-Server approval system
-
-PostgreSQL-backed persistent storage
-
-Modular cog-based architecture
-
-Poll system using interaction components
-
-Owner-restricted administrative commands
-
-Railway cloud deployment ready
-
-GitHub auto-deploy integration
+- Slash command system (`/`)
+- Server approval system
+- PostgreSQL-backed persistent storage
+- Poll system using Discord interaction components
+- Owner-restricted administrative commands
+- Multi-server data isolation
+- Automatic deployment through GitHub integration
 
 
-
-🗄 Database Design
+## 🗄 Database Design
 
 The bot uses PostgreSQL for persistent state management.
 
 Design principles:
 
-Composite primary keys for per-guild data isolation
+- Composite primary keys for per-guild isolation  
+- Safe upsert operations to prevent duplicate records  
+- Asynchronous query execution for performance  
+- Persistent approval state tracking  
 
-ON CONFLICT DO UPDATE for safe upsert operations
+This enables reliable operation across multiple servers without data conflicts.
 
-Asynchronous query execution via connection pooling
 
-Persistent approval state storage
+## 🔐 Required Environment Variables
 
-This allows the bot to operate across multiple servers safely and reliably.
+The bot requires the following environment variables:
+
+TOKEN=your_discord_bot_token
+
+DATABASE_URL=your_postgresql_connection_string
+
+OWNER_ID=your_discord_user_id
+
+Environment variables are used to ensure secure credential management and production portability.
+
+
+## ☁️ Deployment
+
+The bot is deployed using Railway as a persistent worker process.  
+GitHub integration allows automatic redeployment on push, supporting a clean CI/CD workflow.
+
+
+## 🧠 Design Philosophy
+
+This project emphasizes:
+
+- Separation of concerns  
+- Asynchronous non-blocking execution  
+- Persistent multi-guild data modeling  
+- Safe database concurrency handling  
+- Modular extensibility  
+- Cloud-native deployment patterns  
+
+The goal is to build Discord applications using real backend engineering principles.
+
+
+## 📚 Technology Stack
+
+- Python  
+- discord.py  
+- asyncpg  
+- PostgreSQL  
+- Railway  
+- GitHub (CI/CD integration)  
